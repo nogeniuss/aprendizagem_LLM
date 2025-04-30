@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Economia Hoje - Chat</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <meta name="description" content="Assistente econômico para informações sobre mercado financeiro, indicadores e notícias econômicas">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 3v18h18"></path>
+          <path d="M18 17V9"></path>
+          <path d="M13 17V5"></path>
+          <path d="M8 17v-3"></path>
+        </svg>
+        Economia Hoje
+      </h1>
+      <div class="date-display" id="currentDate"></div>
+    </header>
+    <div class="chat-area">
+      <div class="chat-container">
+        <div id="chat-messages">
+          <div class="message bot-message">
+            Olá! Sou seu assistente econômico. Posso ajudar com informações sobre:
+            <ul style="margin-top: 10px; margin-left: 20px;">
+              <li>Indicadores econômicos atualizados</li>
+              <li>Análise do mercado financeiro</li>
+              <li>Dicas para suas finanças pessoais</li>
+              <li>Notícias econômicas recentes</li>
+            </ul>
+            Como posso ajudar hoje?
+          </div>
+        </div>
+      </div>
+      <form id="questionForm">
+        <div class="input-group">
+          <textarea id="questionInput" placeholder="Digite sua pergunta sobre economia ou finanças..." rows="1"></textarea>
+          <button type="submit" id="sendButton">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+        <div class="suggestion-chips">
+          <div class="suggestion-chip">Como está o dólar hoje?</div>
+          <div class="suggestion-chip">Principais índices da bolsa</div>
+          <div class="suggestion-chip">Taxa de juros atual</div>
+          <div class="suggestion-chip">Dicas para economizar</div>
+        </div>
+      </form>
+    </div>
+    <div class="sidebar">
+      <div class="card">
+        <h2>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+          Indicadores Econômicos
+        </h2>
+        <div class="card-tabs">
+          <div class="card-tab active" data-tab="moedas">Moedas</div>
+          <div class="card-tab" data-tab="indices">Índices</div>
+          <div class="card-tab" data-tab="juros">Juros</div>
+        </div>
+        <div id="indicators-content">
+          <div class="tab-content" id="moedas-content">
+            <div id="economyList"></div>
+          </div>
+          <div class="tab-content" id="indices-content" style="display: none;"></div>
+          <div class="tab-content" id="juros-content" style="display: none;"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          Últimas Notícias
+        </h2>
+        <div id="newsList"></div>
+      </div>
+      <div class="card">
+        <h2>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+            <path d="M2 17l10 5 10-5"></path>
+            <path d="M2 12l10 5 10-5"></path>
+          </svg>
+          Análise de Mercado
+        </h2>
+        <div class="chart-container">
+          <canvas id="marketChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>© 2023 Economia Hoje - Assistente Econômico</p>
+      <p>Dados fornecidos apenas para fins informativos. Não constitui aconselhamento financeiro.</p>
+    </div>
+  </footer>
+
+  <!-- Script principal da aplicação -->
+  <script src="./script.js"></script>
+</body>
+</html>
