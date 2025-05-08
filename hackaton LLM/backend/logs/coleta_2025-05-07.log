@@ -1,0 +1,54 @@
+[2025-05-07T21:48:38.892Z] Agendador de coleta iniciado
+[2025-05-07T21:48:38.892Z] Executando coleta inicial
+[2025-05-07T21:48:38.893Z] Iniciando coleta agendada
+[2025-05-07T21:48:45.123Z] Agendador de coleta encerrado pelo usuário
+[2025-05-07T21:49:04.875Z] Agendador de coleta iniciado
+[2025-05-07T21:49:04.875Z] Executando coleta inicial
+[2025-05-07T21:49:04.875Z] Iniciando coleta agendada
+[2025-05-07T21:49:31.292Z] Coleta concluída com sucesso. Cotações: 0, Indicadores: 0, Bancos: 0, Notícias: 0
+[2025-05-07T21:51:04.175Z] Agendador de coleta encerrado pelo usuário
+[2025-05-07T22:00:11.061Z] Agendador de coleta iniciado
+[2025-05-07T22:00:11.061Z] Executando coleta inicial
+[2025-05-07T22:00:11.062Z] Iniciando coleta agendada
+[2025-05-07T22:00:36.032Z] Coleta concluída com sucesso. Cotações: 0, Indicadores: 0, Bancos: 0, Notícias: 0
+[2025-05-07T22:05:20.573Z] Agendador de coleta encerrado pelo usuário
+[2025-05-07T22:05:22.742Z] Agendador de coleta iniciado
+[2025-05-07T22:05:22.742Z] Executando coleta inicial
+[2025-05-07T22:05:22.742Z] Iniciando coleta agendada
+[2025-05-07T22:06:11.935Z] Coleta concluída com sucesso. Cotações: 3, Indicadores: 0, Bancos: 357, Notícias: 17
+[2025-05-07T22:09:29.422Z] Agendador de coleta encerrado pelo usuário
+[2025-05-07T22:09:31.653Z] Agendador de coleta iniciado
+[2025-05-07T22:09:31.654Z] Executando coleta inicial
+[2025-05-07T22:09:31.654Z] Iniciando coleta agendada
+[2025-05-07T22:10:19.215Z] Coleta concluída com sucesso. Cotações: 3, Indicadores: 0, Bancos: undefined, Notícias: 5
+[2025-05-07T22:14:25.446Z] Agendador de coleta encerrado pelo usuário
+[2025-05-07T22:14:27.472Z] Agendador de coleta iniciado
+[2025-05-07T22:14:27.472Z] Executando coleta inicial
+[2025-05-07T22:14:27.472Z] Iniciando coleta agendada
+[2025-05-07T22:14:30.587Z] ERROR: Coleta falhou: Cannot read properties of undefined (reading 'indicadoresResults')
+[2025-05-07T22:18:00.495Z] Agendador de coleta encerrado pelo usuário
+[2025-05-07T22:18:02.824Z] Agendador de coleta iniciado
+[2025-05-07T22:18:02.825Z] Executando coleta inicial
+[2025-05-07T22:18:02.825Z] Iniciando coleta agendada
+[2025-05-07T22:18:09.423Z] ERROR: Coleta falhou: undefined
+[2025-05-07T22:19:48.601Z] Agendador de coleta encerrado pelo usuário
+[2025-05-07T23:01:35.034Z] Agendador de coleta iniciado
+[2025-05-07T23:01:35.034Z] Executando coleta inicial
+[2025-05-07T23:01:35.035Z] Iniciando coleta agendada
+[2025-05-07T23:01:48.852Z] ERROR: Coleta falhou: undefined
+[2025-05-07T23:08:09.147Z] Agendador de coleta encerrado pelo usuário
+[2025-05-07T23:08:11.996Z] Agendador de coleta iniciado
+[2025-05-07T23:08:11.997Z] Executando coleta inicial
+[2025-05-07T23:08:11.997Z] Iniciando coleta agendada
+[2025-05-07T23:08:18.782Z] ERROR: Coleta falhou: undefined
+[2025-05-07T23:11:01.312Z] Agendador de coleta encerrado pelo usuário
+[2025-05-07T23:11:03.405Z] Agendador de coleta iniciado
+[2025-05-07T23:11:03.405Z] Executando coleta inicial
+[2025-05-07T23:11:03.405Z] Iniciando coleta agendada
+[2025-05-07T23:11:11.719Z] ERROR: Coleta falhou: undefined
+[2025-05-07T23:19:23.601Z] Agendador de coleta encerrado pelo usuário
+[2025-05-07T23:19:25.968Z] Agendador de coleta iniciado
+[2025-05-07T23:19:25.968Z] Executando coleta inicial
+[2025-05-07T23:19:25.969Z] Iniciando coleta agendada
+[2025-05-07T23:19:36.888Z] ERROR: Coleta falhou: undefined
+[2025-05-07T23:25:05.051Z] Agendador de coleta encerrado pelo usuário

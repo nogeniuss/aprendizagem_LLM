@@ -15,7 +15,6 @@ if (!fs.existsSync(logDir)) {
 }
 
 const lockFile = path.join(logDir, 'scheduler.lock');
-
 if (fs.existsSync(lockFile)) {
   try {
     const pid = fs.readFileSync(lockFile, 'utf8');
@@ -37,5 +36,4 @@ if (fs.existsSync(lockFile)) {
 
 // Iniciar o agendador
 require('./backend/rotina/scheduler');
-
 console.log('Agendador iniciado e rodando em segundo plano.');

@@ -55,163 +55,179 @@ async function saveCotacoes(cotacoesData) {
   }
 }
 
-// Serviço para salvar indicadores
-async function saveIndicadores(indicadoresData) {
-  const results = {
-    added: 0,
-    skipped: 0,
-    errors: 0
-  };
-
+/**
+ * Salva os indicadores econômicos no banco de dados
+ * @param {Array} indicadores - Lista de indicadores a serem salvos
+ * @returns {Object} - Estatísticas de indicadores adicionados, ignorados e com erros
+ */
+async function saveIndicadores(indicadores) {
   try {
-    // Processar SELIC, CDI, IPCA
-    for (const tipo of ['SELIC', 'CDI', 'IPCA']) {
-      if (!indicadoresData[tipo]) continue;
+    let adicionados = 0;
+    let ignorados = 0;
+    let erros = 0;
 
-      const data = indicadoresData[tipo];
-      
-      // Criar ID único para verificar duplicidade
-      const uniqueId = generateUniqueId({
-        tipo,
-        valor: data.valor,
-        data: data.data
-      });
-
-      // Verificar se já existe
-      const existing = await Indicador.findOne({ uniqueId });
-      
-      if (existing) {
-        results.skipped++;
-        continue;
-      }
-
-      // Criar novo documento
-      const indicador = new Indicador({
-        tipo,
-        valor: parseFloat(data.valor),
-        data: new Date(data.data),
-        uniqueId
-      });
-
-      await indicador.save();
-      results.added++;
+    // Verificar se indicadores é um array
+    if (!Array.isArray(indicadores)) {
+      console.warn('Dados de indicadores não é um array:', indicadores);
+      return { adicionados, ignorados, erros: 1 };
     }
 
-    return results;
+    for (const indicadorData of indicadores) {
+      try {
+        // Verificar e corrigir campos obrigatórios
+        const indicadorCorrigido = {
+          ...indicadorData,
+          tipo: indicadorData.tipo || 'Desconhecido',
+          valor: indicadorData.valor || indicadorData.value || 0,
+          data: indicadorData.data || indicadorData.date || new Date()
+        };
+
+        // Verificar se o indicador já existe
+        const indicadorExistente = await Indicador.findOne({ 
+          tipo: indicadorCorrigido.tipo,
+          data: indicadorCorrigido.data
+        });
+        
+        if (!indicadorExistente) {
+          await Indicador.create(indicadorCorrigido);
+          adicionados++;
+        } else {
+          // Atualizar indicador existente com novos dados
+          await Indicador.findByIdAndUpdate(indicadorExistente._id, indicadorCorrigido);
+          ignorados++;
+        }
+      } catch (error) {
+        console.warn(`Erro ao salvar indicador: ${error}`);
+        erros++;
+      }
+    }
+    
+    return { adicionados, ignorados, erros };
   } catch (error) {
     console.error('Erro ao salvar indicadores:', error);
-    results.errors++;
-    return results;
+    throw error;
   }
 }
 
-// Serviço para salvar bancos
-async function saveBancos(bancosData) {
-  const results = {
-    added: 0,
-    skipped: 0,
-    errors: 0
-  };
 
+/**
+ * Salva os dados dos bancos no banco de dados
+ * @param {Array} bancos - Lista de bancos a serem salvos
+ * @returns {Object} - Estatísticas de bancos adicionados, ignorados e com erros
+ */
+async function saveBancos(bancos) {
   try {
-    // Verificar se bancosData é um array
-    if (!Array.isArray(bancosData)) {
-      throw new Error('Dados de bancos devem ser um array');
+    let adicionados = 0;
+    let ignorados = 0;
+    let erros = 0;
+
+    // Verificar se bancos é um array
+    if (!Array.isArray(bancos)) {
+      console.warn('Dados de bancos não é um array:', bancos);
+      return { adicionados, ignorados, erros: 1 };
     }
 
-    // Processar cada banco
-    for (const banco of bancosData) {
-      // Verificar se já existe
-      const existing = await Banco.findOne({ ispb: banco.ispb });
-      
-      if (existing) {
-        results.skipped++;
-        continue;
+    for (const bancoData of bancos) {
+      try {
+        // Verificar e corrigir campos obrigatórios
+        const bancoCorrigido = {
+          ...bancoData,
+          ispb: bancoData.ispb || bancoData.code || bancoData.codigo || 'N/A',
+          name: bancoData.name || bancoData.nome || bancoData.shortName || 'N/A',
+          fullName: bancoData.fullName || bancoData.nomeCompleto || bancoData.nome_completo || bancoData.name || 'N/A'
+        };
+
+        // Verificar se o banco já existe
+        const bancoExistente = await Banco.findOne({ 
+          $or: [
+            { ispb: bancoCorrigido.ispb },
+            { code: bancoCorrigido.code }
+          ]
+        });
+        
+        if (!bancoExistente) {
+          await Banco.create(bancoCorrigido);
+          adicionados++;
+        } else {
+          // Atualizar banco existente com novos dados
+          await Banco.findByIdAndUpdate(bancoExistente._id, bancoCorrigido);
+          ignorados++;
+        }
+      } catch (error) {
+        console.warn(`Erro ao salvar banco: ${error}`);
+        erros++;
       }
-
-      // Criar novo documento
-      const novoBanco = new Banco({
-        ispb: banco.ispb,
-        name: banco.name,
-        code: banco.code || null,
-        fullName: banco.fullName
-      });
-
-      await novoBanco.save();
-      results.added++;
     }
-
-    return results;
+    
+    return { adicionados, ignorados, erros };
   } catch (error) {
     console.error('Erro ao salvar bancos:', error);
-    results.errors++;
-    return results;
+    throw error;
   }
 }
 
-// Serviço para salvar notícias
-async function saveNoticias(noticiasData) {
-  const results = {
-    added: 0,
-    skipped: 0,
-    errors: 0
-  };
 
+
+/**
+ * Salva as notícias no banco de dados
+ * @param {Array} noticias - Lista de notícias a serem salvas
+ * @returns {Object} - Estatísticas de notícias adicionadas, ignoradas e com erros
+ */
+async function saveNoticias(noticias) {
   try {
-    // Processar cada termo de busca
-    for (const [key, data] of Object.entries(noticiasData)) {
-      if (!data.articles || !Array.isArray(data.articles)) continue;
+    let adicionados = 0;
+    let ignorados = 0;
+    let erros = 0;
 
-      // Extrair query e language da chave (formato: "termo_idioma")
-      const [query, language] = key.split('_');
-
-      // Processar cada artigo
-      for (const article of data.articles) {
-        // Criar ID único para verificar duplicidade
-        const uniqueId = generateUniqueId({
-          title: article.title,
-          url: article.url,
-          publishedAt: article.publishedAt
-        });
-
-        // Verificar se já existe
-        const existing = await Noticia.findOne({ uniqueId });
-        
-        if (existing) {
-          results.skipped++;
-          continue;
-        }
-
-        // Criar novo documento
-        const noticia = new Noticia({
-          source: {
-            id: article.source.id || null,
-            name: article.source.name
-          },
-          author: article.author || null,
-          title: article.title,
-          description: article.description || null,
-          url: article.url,
-          urlToImage: article.urlToImage || null,
-          publishedAt: new Date(article.publishedAt),
-          content: article.content || null,
-          query,
-          language,
-          uniqueId
-        });
-
-        await noticia.save();
-        results.added++;
-      }
+    // Verificar se noticias é um array
+    if (!Array.isArray(noticias)) {
+      console.warn('Dados de notícias não é um array:', noticias);
+      return { adicionados, ignorados, erros: 1 };
     }
 
-    return results;
+    for (const noticiaData of noticias) {
+      try {
+        // Verificar e corrigir campos obrigatórios
+        const noticiaCorrigida = {
+          ...noticiaData,
+          title: noticiaData.title || noticiaData.titulo || 'Sem título',
+          description: noticiaData.description || noticiaData.descricao || 'Sem descrição',
+          url: noticiaData.url || noticiaData.link || '#',
+          publishedAt: noticiaData.publishedAt || noticiaData.data || new Date(),
+          source: {
+            name: (noticiaData.source && noticiaData.source.name) || 
+                  (noticiaData.fonte && noticiaData.fonte.nome) || 
+                  'Fonte desconhecida'
+          }
+        };
+
+        // Verificar se a notícia já existe
+        const noticiaExistente = await Noticia.findOne({ 
+          $or: [
+            { title: noticiaCorrigida.title },
+            { url: noticiaCorrigida.url }
+          ]
+        });
+        
+        if (!noticiaExistente) {
+          await Noticia.create(noticiaCorrigida);
+          adicionados++;
+        } else {
+          ignorados++;
+        }
+      } catch (error) {
+        console.warn(`Erro ao salvar notícia: ${error}`);
+        erros++;
+      }
+    }
+    
+    return { adicionados, ignorados, erros };
   } catch (error) {
     console.error('Erro ao salvar notícias:', error);
-    results.errors++;
-    return results;
+    throw error;
   }
 }
+
 
 module.exports = {
   saveCotacoes,

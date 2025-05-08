@@ -157,56 +157,51 @@
         }
     }
     
-    // Função principal para executar todo o processo
-    async function fetchNewsData(apiKey) {
-        try {
-          console.log('Iniciando coleta de dados da News API...');
-          const startTime = new Date();
-            
-          // Buscar todos os dados
-          const newsData = await fetchAllNewsData(apiKey);
-            
-          // Calcular estatísticas
-          const endTime = new Date();
-          const totalTime = (endTime - startTime) / 1000;
-            
-          // Contar total de artigos
-          let totalArticles = 0;
-          Object.values(newsData).forEach(result => {
-            if (result.articles) {
-              totalArticles += result.articles.length;
-            }
-          });
-            
-          console.log(`
-          ===============================================
-          Sumário da coleta:
-          - Total de consultas: ${Object.keys(newsData).length}
-          - Total de artigos: ${totalArticles}
-          - Tempo total: ${totalTime.toFixed(2)} segundos
-          ===============================================
-          `);
-            
-          // Salvar resultados
-          saveResultsToFile(newsData);
-            
-          return {
-            success: true,
-            summary: {
-              totalQueries: Object.keys(newsData).length,
-              totalArticles,
-              executionTimeSeconds: totalTime.toFixed(2)
-            },
-            data: newsData
-          };
-        } catch (error) {
-          console.error('Erro ao executar processo:', error);
-          return {
-            success: false,
-            error: error.message
-          };
-        }
+/**
+ * Busca notícias da NewsAPI
+ * @param {string} apiKey - Chave de API para a NewsAPI
+ * @returns {Object} - Objeto com status de sucesso e dados ou erro
+ */
+async function fetchNewsData(apiKey) {
+  try {
+    // Definir parâmetros da consulta
+    const params = {
+      country: 'br', // Brasil
+      category: 'business', // Categoria de negócios
+      pageSize: 20, // Número de notícias
+      apiKey: apiKey
+    };
+    
+    // Construir URL com parâmetros
+    const url = new URL('https://newsapi.org/v2/top-headlines');
+    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+    
+    // Fazer requisição
+    const response = await fetch(url.toString());
+    const data = await response.json();
+    
+    // Verificar se a resposta foi bem-sucedida
+    if (data.status === 'ok') {
+      return {
+        success: true,
+        articles: data.articles || [],
+        totalResults: data.totalResults || 0
+      };
+    } else {
+      console.error('Erro na resposta da NewsAPI:', data);
+      return {
+        success: false,
+        error: data.message || 'Erro desconhecido ao buscar notícias'
+      };
     }
+  } catch (error) {
+    console.error('Erro ao buscar notícias:', error);
+    return {
+      success: false,
+      error: error.message || 'Erro ao buscar notícias'
+    };
+  }
+}
     
     module.exports = { fetchNewsData, fetchAllNewsData, saveResultsToFile };
     

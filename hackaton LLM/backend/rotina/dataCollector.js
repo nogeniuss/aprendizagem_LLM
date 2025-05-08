@@ -36,105 +36,205 @@ async function coletarCotacoes() {
   }
 }
 
-// Função para coletar indicadores e bancos
+/**
+ * Coleta dados da BrasilAPI (bancos e indicadores)
+ * @returns {Object} Resultados da coleta de bancos e indicadores
+ */
 async function coletarDadosBrasil() {
-  console.log('Coletando indicadores e bancos...');
   try {
-    const brasilData = await requisitar_brasilApi();
+    console.log('Iniciando coleta de dados da BrasilAPI...');
     
-    // Salvar indicadores (SELIC, CDI, IPCA)
-    const indicadoresResults = await saveIndicadores({
-      SELIC: brasilData.SELIC,
-      CDI: brasilData.CDI,
-      IPCA: brasilData.IPCA
-    });
+    // Obter dados dos bancos
+    console.log('Coletando dados de bancos...');
+    let bancos = [];
+    try {
+      bancos = await requisitar_brasilApi('/banks/v1');
+      console.log(`Recebidos ${bancos.length} bancos da API`);
+      
+      // Log para debug - mostrar estrutura dos primeiros dados
+      if (bancos.length > 0) {
+        console.log('Exemplo de banco recebido:', JSON.stringify(bancos[0]));
+      }
+      
+      // Mapear os dados para garantir a estrutura correta
+      bancos = bancos.map(banco => ({
+        ispb: banco.ispb || banco.code || 'N/A',
+        name: banco.name || banco.nome || 'N/A',
+        fullName: banco.fullName || banco.nome_completo || banco.name || 'N/A',
+        code: banco.code || banco.codigo || '',
+        compe: banco.compe || '',
+        // Outros campos que possam existir
+        ...banco
+      }));
+    } catch (error) {
+      console.error('Erro ao coletar dados de bancos:', error);
+    }
     
     // Salvar bancos
-    const bancosResults = await saveBancos(brasilData['Lista de Bancos']);
+    const bancosResults = await saveBancos(bancos);
+    console.log(`Bancos: ${bancosResults.adicionados} adicionados, ${bancosResults.ignorados} ignorados, ${bancosResults.erros} erros`);
     
-    console.log(`Indicadores: ${indicadoresResults.added} adicionados, ${indicadoresResults.skipped} ignorados, ${indicadoresResults.errors} erros`);
-    console.log(`Bancos: ${bancosResults.added} adicionados, ${bancosResults.skipped} ignorados, ${bancosResults.errors} erros`);
+    // Obter indicadores econômicos
+    console.log('Coletando indicadores econômicos...');
+    let indicadores = [];
+    try {
+      // Coletar diferentes indicadores
+      const indicadoresCDI = await requisitar_brasilApi('/cdi/v1');
+      const indicadoresSELIC = await requisitar_brasilApi('/taxa-selic/v1');
+      const indicadoresIPCA = await requisitar_brasilApi('/ipca/v1');
+      
+      // Combinar todos os indicadores
+      indicadores = [
+        ...(Array.isArray(indicadoresCDI) ? indicadoresCDI.map(i => ({...i, tipo: 'CDI'})) : []),
+        ...(Array.isArray(indicadoresSELIC) ? indicadoresSELIC.map(i => ({...i, tipo: 'SELIC'})) : []),
+        ...(Array.isArray(indicadoresIPCA) ? indicadoresIPCA.map(i => ({...i, tipo: 'IPCA'})) : [])
+      ];
+      
+      console.log(`Recebidos ${indicadores.length} indicadores da API`);
+    } catch (error) {
+      console.error('Erro ao coletar indicadores econômicos:', error);
+    }
     
-    return { indicadoresResults, bancosResults };
+    // Salvar indicadores
+    const indicadoresResults = await saveIndicadores(indicadores);
+    console.log(`Indicadores: ${indicadoresResults.adicionados} adicionados, ${indicadoresResults.ignorados} ignorados, ${indicadoresResults.erros} erros`);
+    
+    console.log('Coleta de dados da BrasilAPI concluída');
+    
+    // Retornar os resultados
+    return {
+      bancosResults,
+      indicadoresResults
+    };
   } catch (error) {
-    console.error('Erro ao coletar dados do Brasil:', error);
-    return { indicadoresResults: { added: 0, skipped: 0, errors: 1 }, bancosResults: { added: 0, skipped: 0, errors: 1 } };
+    console.error('Erro ao coletar dados da BrasilAPI:', error);
+    // Retornar resultados vazios em caso de erro
+    return {
+      bancosResults: { adicionados: 0, ignorados: 0, erros: 1 },
+      indicadoresResults: { adicionados: 0, ignorados: 0, erros: 1 }
+    };
   }
 }
 
-// Função para coletar notícias
+
+
+/**
+ * Coleta notícias da NewsAPI
+ * @returns {Object} Resultados da coleta de notícias
+ */
 async function coletarNoticias() {
-  console.log('Coletando notícias...');
   try {
+    console.log('Iniciando coleta de notícias...');
+    
     const apiKey = process.env.NEWS_API_KEY;
-    
     if (!apiKey) {
-      console.error('API key para NewsAPI não encontrada!');
-      return { added: 0, skipped: 0, errors: 1 };
+      console.error('API key para NewsAPI não encontrada');
+      return { adicionados: 0, ignorados: 0, erros: 1 };
     }
     
-    const noticiasData = await fetchNewsData(apiKey);
+    // Obter notícias
+    const resultado = await fetchNewsData(apiKey);
     
-    if (!noticiasData.success) {
-      console.error('Erro ao buscar notícias:', noticiasData.error);
-      return { added: 0, skipped: 0, errors: 1 };
+    if (!resultado.success) {
+      console.error('Erro ao buscar notícias:', resultado.error);
+      return { adicionados: 0, ignorados: 0, erros: 1 };
     }
     
-    const results = await saveNoticias(noticiasData.data);
-    console.log(`Notícias: ${results.added} adicionadas, ${results.skipped} ignoradas, ${results.errors} erros`);
-    return results;
+    let noticias = resultado.articles || [];
+    console.log(`Recebidas ${noticias.length} notícias da API`);
+    
+    // Log para debug - mostrar estrutura dos primeiros dados
+    if (noticias.length > 0) {
+      console.log('Exemplo de notícia recebida:', JSON.stringify(noticias[0]));
+    }
+    
+    // Mapear os dados para garantir a estrutura correta
+    noticias = noticias.map(noticia => ({
+      title: noticia.title || 'Sem título',
+      description: noticia.description || 'Sem descrição',
+      content: noticia.content || noticia.description || '',
+      url: noticia.url || '#',
+      urlToImage: noticia.urlToImage || '',
+      publishedAt: noticia.publishedAt || new Date(),
+      source: {
+        name: (noticia.source && noticia.source.name) || 'Fonte desconhecida',
+        id: (noticia.source && noticia.source.id) || null
+      },
+      author: noticia.author || 'Desconhecido',
+      // Outros campos que possam existir
+      ...noticia
+    }));
+    
+    // Salvar notícias
+    const resultadoNoticias = await saveNoticias(noticias);
+    console.log(`Notícias: ${resultadoNoticias.adicionados} adicionadas, ${resultadoNoticias.ignorados} ignoradas, ${resultadoNoticias.erros} erros`);
+    
+    console.log('Coleta de notícias concluída');
+    
+    return resultadoNoticias;
   } catch (error) {
     console.error('Erro ao coletar notícias:', error);
-    return { added: 0, skipped: 0, errors: 1 };
+    return { adicionados: 0, ignorados: 0, erros: 1 };
   }
 }
 
-// Função principal para executar toda a coleta
+
+
+/**
+ * Executa a coleta completa de dados
+ * @returns {Object} Resultados da coleta
+ */
 async function executarColeta() {
-  console.log('Iniciando coleta de dados - ' + new Date().toISOString());
-  
-  // Conectar ao banco de dados
-  const dbConnected = await connectToDatabase();
-  
-  if (!dbConnected) {
-    console.error('Não foi possível conectar ao banco de dados. Abortando coleta.');
-    return false;
-  }
-  
   try {
-    // Executar coletas em paralelo
-    const [cotacoesResults, brasilResults, noticiasResults] = await Promise.all([
-      coletarCotacoes(),
-      coletarDadosBrasil(),
-      coletarNoticias()
-    ]);
-        // Resumo da coleta
-        console.log('\n=== RESUMO DA COLETA ===');
-        console.log(`Cotações: ${cotacoesResults.added} novas`);
-        console.log(`Indicadores: ${brasilResults.indicadoresResults.added} novos`);
-        console.log(`Bancos: ${brasilResults.bancosResults.added} novos`);
-        console.log(`Notícias: ${noticiasResults.added} novas`);
-        console.log('========================\n');
-        
-        return {
-          success: true,
-          timestamp: new Date().toISOString(),
-          results: {
-            cotacoes: cotacoesResults,
-            indicadores: brasilResults.indicadoresResults,
-            bancos: brasilResults.bancosResults,
-            noticias: noticiasResults
-          }
-        };
-      } catch (error) {
-        console.error('Erro durante a execução da coleta:', error);
-        return {
-          success: false,
-          timestamp: new Date().toISOString(),
-          error: error.message
-        };
-      }
+    console.log('=== INICIANDO COLETA DE DADOS ===');
+    
+    // Coletar cotações
+    let cotacoesResults = { adicionadas: 0, ignoradas: 0, erros: 0 };
+    try {
+      cotacoesResults = await coletarCotacoes();
+    } catch (error) {
+      console.error('Erro ao coletar cotações:', error);
     }
+    
+    // Coletar dados do Brasil (bancos e indicadores)
+    let bancosResults = { adicionados: 0, ignorados: 0, erros: 0 };
+    let indicadoresResults = { adicionados: 0, ignorados: 0, erros: 0 };
+    try {
+      const brasilResults = await coletarDadosBrasil();
+      // Verificar se os resultados existem antes de atribuir
+      bancosResults = brasilResults?.bancosResults || bancosResults;
+      indicadoresResults = brasilResults?.indicadoresResults || indicadoresResults;
+    } catch (error) {
+      console.error('Erro ao coletar dados do Brasil:', error);
+    }
+    
+    // Coletar notícias
+    let noticiasResults = { adicionados: 0, ignorados: 0, erros: 0 };
+    try {
+      noticiasResults = await coletarNoticias();
+    } catch (error) {
+      console.error('Erro ao coletar notícias:', error);
+    }
+    
+    // Resumo da coleta
+    console.log('=== RESUMO DA COLETA ===');
+    console.log(`Cotações: ${cotacoesResults.adicionadas} novas`);
+    console.log(`Bancos: ${bancosResults.adicionados} adicionados, ${bancosResults.ignorados} ignorados, ${bancosResults.erros} erros`);
+    console.log(`Indicadores: ${indicadoresResults.adicionados} adicionados, ${indicadoresResults.ignorados} ignorados, ${indicadoresResults.erros} erros`);
+    console.log(`Notícias: ${noticiasResults.adicionados} adicionadas, ${noticiasResults.ignorados} ignoradas, ${noticiasResults.erros} erros`);
+    
+    return {
+      cotacoesResults,
+      bancosResults,
+      indicadoresResults,
+      noticiasResults
+    };
+  } catch (error) {
+    console.error('Erro durante a execução da coleta:', error);
+    throw error;
+  }
+}
+
     
     // Exportar a função para uso externo
     module.exports = { executarColeta };
