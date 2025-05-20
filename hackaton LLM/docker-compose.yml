@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./  # Contexto é a raiz do projeto (hackaton LLM)
+      dockerfile: Dockerfile
+    container_name: economia-hoje-backend
+    restart: always
+    ports:
+      - "${PORT:-3000}:3000"
+    env_file:
+      - ./.env
+    volumes:
+      - ./:/hackaton_LLM  # Monta todo o diretório do projeto
+      - /app/node_modules  # Preserva node_modules do container
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

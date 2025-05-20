@@ -55,11 +55,6 @@ async function saveCotacoes(cotacoesData) {
   }
 }
 
-/**
- * Salva os indicadores econômicos no banco de dados
- * @param {Array} indicadores - Lista de indicadores a serem salvos
- * @returns {Object} - Estatísticas de indicadores adicionados, ignorados e com erros
- */
 async function saveIndicadores(indicadores) {
   try {
     let adicionados = 0;
@@ -109,12 +104,6 @@ async function saveIndicadores(indicadores) {
   }
 }
 
-
-/**
- * Salva os dados dos bancos no banco de dados
- * @param {Array} bancos - Lista de bancos a serem salvos
- * @returns {Object} - Estatísticas de bancos adicionados, ignorados e com erros
- */
 async function saveBancos(bancos) {
   try {
     let adicionados = 0;
@@ -166,13 +155,6 @@ async function saveBancos(bancos) {
   }
 }
 
-
-
-/**
- * Salva as notícias no banco de dados
- * @param {Array} noticias - Lista de notícias a serem salvas
- * @returns {Object} - Estatísticas de notícias adicionadas, ignoradas e com erros
- */
 async function saveNoticias(noticias) {
   try {
     let adicionados = 0;
